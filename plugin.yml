@@ -1,0 +1,16 @@
+name: Dungeon8r
+author: Ramirez57
+description: Procedurally generates dungeons in a world.
+version: A0.1_MC1.4.5_R0.2
+main: ramirez57.Dungeon8r.Main
+load: startup
+commands:
+  genhere:
+    description: Generate test dungeon.
+    usage: genhere
+    permission-message: No permission.
+    permission: dungeon8r.generate
+permissions:
+  dungeon8r.generate:
+    description: Permission to generate test dungeons.
+    default: op
