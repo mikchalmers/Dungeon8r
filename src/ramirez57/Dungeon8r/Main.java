@@ -60,15 +60,18 @@ public class Main extends JavaPlugin implements Listener {
 		
 	}
 	
+	
 	public void makeDungeon(Location loc) {
 		boolean generating = true;
 		int floor=1;
 		dutypes = config.getStringList("dungeon.types");
 		dutype = EntityType.fromName(dutypes.get(random.nextInt(dutypes.size())));
-		while(generating) {
+		while(generating) 
+		{
 			int chests = 0;
 			loc.subtract(0,1,0);
-			for(int i=0;i<9;i++) {
+			for(int i=0;i<9;i++) 
+			{
 				if(loc.getBlock().getRelative(-1,0,0).getType() == Material.AIR) loc.getBlock().getRelative(-1,0,0).setType(Material.COBBLESTONE);
 				loc.getBlock().setType(Material.LADDER);
 				loc.getBlock().setData((byte)5);
@@ -77,8 +80,11 @@ public class Main extends JavaPlugin implements Listener {
 			loc.subtract(1,-3,1);
 			gentile(loc,false);
 			int complex = random.nextInt((config.getInt("max_complexity")-config.getInt("min_complexity")))+config.getInt("min_complexity");
-			for(int i=0;i<complex;i++) {
-				switch(random.nextInt(4)) {
+			for(int i=0;i<complex;i++) 
+			{
+				//add new room loc based on random integer (?)
+				switch(random.nextInt(4)) 
+				{
 				case 0:
 					loc.add(3,0,0);
 					break;
@@ -94,38 +100,60 @@ public class Main extends JavaPlugin implements Listener {
 				default:
 					break;
 				}
-				gentile(loc,true);
-				if(chests < floor && random.nextBoolean()) { genchest(loc,1);chests++; }
+				
+				//test if air block
+				if(loc.getBlock().getType() != Material.AIR)
+				{
+					//call method to generate floor and spawners
+					gentile(loc,true);
+					//generate chest
+					if(chests < floor && random.nextBoolean())
+					{	genchest(loc,1);chests++;	}
+				}
 			}
 			if(chests < floor) genchest(loc,(floor-chests));
-			if(random.nextBoolean()) {
-				loc.add(1,-2,1);floor++;chests=0;
-			}  else {generating = false;}
+			if(random.nextBoolean()) 
+			{	loc.add(1,-2,1);floor++;chests=0;	}  
+			else 	
+			{	generating = false;		}
 		}
 	}
 	
-	public void genchest(Location loc, int contents) {
+	//spawn loot chest
+	public void genchest(Location loc, int contents) 
+	{
+		//go to corner of room							TODO - randomize which corner chest is located in
 		loc.add(1,-2,0);loc.getBlock().setType(Material.CHEST);
 		block = loc.getBlock();
 		chest = (Chest) block.getState();
 		List<String> rewards = config.getStringList("dungeon.rewards." + dutype.getName().toUpperCase());
-		for(int i=0;i<contents;i++) {
+		for(int i=0;i<contents;i++) 
+		{
+			//parse loot table config
 			String[] reward = rewards.get(random.nextInt(rewards.size())).split(":");
+			//add item to chest
 			chest.getInventory().addItem(new ItemStack(Material.matchMaterial(reward[0]),Integer.parseInt(reward[2]),Short.parseShort(reward[1])));
 		}
+		//go back to previous location
 		loc.add(-1,2,0);
 	}
 	
-	public void gentile(Location loc, boolean mobs) {
-		for(int j=0;j<4;j++) {
-			for(int i=0;i<3;i++) {
-				for(int k=0;k<3;k++) {
-					if(loc.getBlock().getType() != Material.LADDER && loc.getBlock().getRelative(1, 0, 0).getType() != Material.LADDER && loc.getBlock().getType() != Material.CHEST) {
-						if(j==3 && loc.getBlock().getType() == Material.AIR) {
-							loc.getBlock().setType(Material.COBBLESTONE);
-						} else if(j<=2) {
-							loc.getBlock().setTypeId(0); 
-						}
+	
+	public void gentile(Location loc, boolean mobs) 
+	{
+		//create dungeon floor
+		for(int j=0;j<4;j++) 
+		{
+			for(int i=0;i<3;i++) 
+			{
+				for(int k=0;k<3;k++) 
+				{
+					if((loc.getBlock().getType() != Material.LADDER) && (loc.getBlock().getRelative(1, 0, 0).getType() != Material.LADDER) && (loc.getBlock().getType() != Material.CHEST)) 
+					{
+						if(j==3 && loc.getBlock().getType() == Material.STONE) 
+						{	loc.getBlock().setType(Material.MOSSYCOBBLESTONE);	} 
+						else if(j<=2) 
+						{	loc.getBlock().setTypeId(0);			}
 					}
 					loc.add(0,0,1);
 				}
@@ -133,8 +161,11 @@ public class Main extends JavaPlugin implements Listener {
 			}
 			loc.subtract(3,1,0);
 		}
+		
+		//generate spawer
 		if(mobs) {
-			if(random.nextInt(config.getInt("dungeon.mob_density")) == 0) {
+			if(random.nextInt(config.getInt("dungeon.mob_density")) == 0) 
+			{
 				loc.add(1,1,1);
 				block = loc.getBlock();
 				block.setType(Material.MOB_SPAWNER);
